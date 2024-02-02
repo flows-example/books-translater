@@ -1,3 +1,28 @@
 name: main
-nodes: []
-edges: []
+nodes:
+  code-0:
+    id: code-0
+    title: EPub
+    pos:
+      x: 143
+      'y': 221
+    options:
+      file: /oomol-storage/books/A History of Greek Mathematics Volume 1.epub
+    block: ./blocks/code-0/code-0.oo.yaml
+  code-1:
+    id: code-1
+    title: XML
+    pos:
+      x: 442
+      'y': 247
+    options: {}
+    block: ./blocks/code-1/code-1.oo.yaml
+edges:
+  edge-0:
+    id: edge-0
+    from:
+      node_id: code-0
+      key: page_content
+    to:
+      node_id: code-1
+      key: xml

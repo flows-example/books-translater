@@ -1,0 +1,27 @@
+# check https://oomol.com/docs/reference/block for block schema
+# check https://oomol.com/docs/reference/builtin-widget for widget schema
+props: {}
+options:
+  file:
+    optional: true
+    schema:
+      type: string
+      "ui:widget": file
+results:
+  title:
+    optional: true
+    schema:
+      type: string
+  page_name:
+    optional: false
+    schema:
+      type: string
+  page_content:
+    optional: false
+    schema:
+      type: string
+entry:
+  bin: vocana-executor-python
+  envs: {}
+  args:
+    - ./index.py
