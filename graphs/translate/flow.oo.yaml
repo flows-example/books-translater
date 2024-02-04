@@ -1,0 +1,12 @@
+name: translate
+nodes:
+  code-0:
+    id: code-0
+    title: Translate
+    pos:
+      x: 39
+      'y': 39
+    options:
+      file: /oomol-storage/books/A History of Greek Mathematics Volume 1.epub
+    block: ./blocks/code-0/code-0.oo.yaml
+edges: {}
