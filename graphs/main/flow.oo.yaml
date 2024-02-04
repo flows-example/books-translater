@@ -11,18 +11,18 @@ nodes:
     block: ./blocks/code-0/code-0.oo.yaml
   code-1:
     id: code-1
-    title: XML
+    title: Translate
     pos:
       x: 442
       'y': 247
     options: {}
     block: ./blocks/code-1/code-1.oo.yaml
 edges:
-  edge-0:
-    id: edge-0
+  edge-1:
+    id: edge-1
     from:
       node_id: code-0
-      key: page_content
+      key: pages
     to:
       node_id: code-1
-      key: xml
+      key: pages

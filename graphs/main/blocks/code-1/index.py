@@ -2,9 +2,7 @@ import re
 from lxml import etree
 from google.cloud import translate
 
-def translate_html(contents, source_language_code, target_language_code) -> list[str]:
-  # https://cloud.google.com/translate/docs/advanced/translate-text-advance?hl=zh-cn
-  client = translate.TranslationServiceClient()
+def translate_html(client, contents, source_language_code, target_language_code) -> list[str]:
 
   project_id = "balmy-mile-348403"
   location = "global"
@@ -36,9 +34,9 @@ def collect_child_text_list(dom):
   
   return text_list, child_doms
 
-def main(props, context):
+def translate_content(client, page_content):
   # to remove <?xml version="1.0" encoding="utf-8"?> which lxml cannot parse
-  xml = re.sub(r"^<\?xml.*\?>", "", props["xml"])
+  xml = re.sub(r"^<\?xml.*\?>", "", page_content)
   # remove namespace of epub
   xml = re.sub(r"xmlns=\"http://www.w3.org/1999/xhtml\"", "", xml)
   xml = re.sub(r"xmlns:epub=\"http://www.idpf.org/2007/ops\"", "", xml)
@@ -51,6 +49,7 @@ def main(props, context):
   merged_text_list = []
   source_text_list, child_doms = collect_child_text_list(body_dom)
   target_text_list = translate_html(
+    client=client,
     contents=source_text_list,
     source_language_code="en",
     target_language_code="zh-CN",
@@ -64,6 +63,14 @@ def main(props, context):
     body_dom.append(source_dom)
     body_dom.append(target_dom)
 
-  root_text = etree.tostring(root, method="html", encoding="utf-8").decode("utf-8")
+  return etree.tostring(root, method="html", encoding="utf-8").decode("utf-8")
 
-  context.result(root_text, "out", True)
+def main(props, context):
+  # https://cloud.google.com/translate/docs/advanced/translate-text-advance?hl=zh-cn
+  client = translate.TranslationServiceClient()
+  pages = props["pages"]
+
+  for page in pages:
+    page["content"] = translate_content(client, page["content"])
+
+  context.result(pages, "pages", True)

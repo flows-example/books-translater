@@ -12,14 +12,18 @@ results:
     optional: true
     schema:
       type: string
-  page_name:
-    optional: false
+  pages:
+    optional: true
     schema:
-      type: string
-  page_content:
-    optional: false
-    schema:
-      type: string
+      type: array
+      items:
+        type: object
+        required: [name, content]
+        properties:
+          name:
+            type: string
+          content:
+            type: string
 entry:
   bin: vocana-executor-python
   envs: {}
