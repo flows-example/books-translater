@@ -12,4 +12,6 @@ def main(props, context):
         "content": item.get_content().decode("utf-8"),
       })
 
+  pages = [pages[3]]
+
   context.result(pages, "pages", True)

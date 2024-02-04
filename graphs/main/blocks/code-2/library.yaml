@@ -1,0 +1,7 @@
+name: code-2
+version: 0.0.1
+namespace: main
+block: ./code-2.oo.yaml
+preview:
+  out:
+    path: ./ui/dist/index.mjs

@@ -13,10 +13,19 @@ nodes:
     id: code-1
     title: Translate
     pos:
-      x: 442
-      'y': 247
+      x: 416
+      'y': 221
     options: {}
     block: ./blocks/code-1/code-1.oo.yaml
+  code-2:
+    id: code-2
+    title: Merge
+    pos:
+      x: 676
+      'y': 221
+    options:
+      file: /oomol-storage/books/target.epub
+    block: ./blocks/code-2/code-2.oo.yaml
 edges:
   edge-1:
     id: edge-1
@@ -26,3 +35,19 @@ edges:
     to:
       node_id: code-1
       key: pages
+  edge-3:
+    id: edge-3
+    from:
+      node_id: code-1
+      key: pages
+    to:
+      node_id: code-2
+      key: pages
+  edge-4:
+    id: edge-4
+    from:
+      node_id: code-0
+      key: title
+    to:
+      node_id: code-2
+      key: title

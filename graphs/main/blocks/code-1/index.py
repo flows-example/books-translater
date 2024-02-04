@@ -28,13 +28,14 @@ def collect_child_text_list(dom):
 
   for child_dom in dom.iterchildren():
     text = etree.tostring(child_dom, method="html", encoding="utf-8").decode("utf-8")
-    text = re.sub(r"<br\s*>", "<br/>", text)
     text_list.append(text)
     child_doms.append(child_dom)
   
   return text_list, child_doms
 
 def translate_content(client, page_content):
+  parser = etree.HTMLParser(recover=True)
+
   # to remove <?xml version="1.0" encoding="utf-8"?> which lxml cannot parse
   xml = re.sub(r"^<\?xml.*\?>", "", page_content)
   # remove namespace of epub
@@ -42,7 +43,7 @@ def translate_content(client, page_content):
   xml = re.sub(r"xmlns:epub=\"http://www.idpf.org/2007/ops\"", "", xml)
   xml = re.sub(r"epub:", "", xml)
 
-  root = etree.fromstring(xml)
+  root = etree.fromstring(xml, parser=parser)
   paras = root.findall(f"body/p")
   body_dom = root.find("body")
 
@@ -58,8 +59,9 @@ def translate_content(client, page_content):
     body_dom.remove(child_dom)
   
   for source, target in zip(source_text_list, target_text_list):
-    source_dom = etree.fromstring(source)
-    target_dom = etree.fromstring(target)
+    print("source: ", source)
+    source_dom = etree.fromstring(source, parser=parser)
+    target_dom = etree.fromstring(target, parser=parser)
     body_dom.append(source_dom)
     body_dom.append(target_dom)
 
