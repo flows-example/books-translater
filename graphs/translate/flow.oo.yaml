@@ -8,6 +8,9 @@ nodes:
       'y': 39
     options:
       file: /oomol-storage/books/A History of Greek Mathematics Volume 1.epub
+      source: en
+      target: zh-CN
+      max_paragraph_characters: 835
     block: ./blocks/code-0/code-0.oo.yaml
   lib-0:
     id: lib-0

@@ -11,16 +11,35 @@ class Translator:
     project_id: str, 
     source_language_code: str, 
     target_language_code: str,
+    max_paragraph_characters: int,
   ):
     self.client = translate.TranslationServiceClient()
     self.project_id = project_id
     self.source_language_code = source_language_code
     self.target_language_code = target_language_code
+    self.max_paragraph_characters = max_paragraph_characters
 
-  def translate(self, page_content):
+  def translate(self, text):
+    location = "global"
+    parent = f"projects/{self.project_id}/locations/{location}"
+    response = self.client.translate_text(
+      request={
+        "parent": parent,
+        "contents": contents,
+        "mime_type": "text/plain",
+        "source_language_code": self.source_language_code,
+        "target_language_code": self.target_language_code,
+      }
+    )
+    for translation in response.translations:
+      return translation.translated_text
+    
+    return title
+
+  def translate_page(self, page_content):
     parser = etree.HTMLParser(recover=True)
     group = ParagraphsGroup(
-      max_paragraph_len=800,
+      max_paragraph_len=self.max_paragraph_characters,
       # https://support.google.com/translate/thread/18674882/how-many-words-is-maximum-in-google?hl=en
       max_group_len=5000,
     )
