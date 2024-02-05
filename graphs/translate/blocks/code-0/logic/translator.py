@@ -25,7 +25,7 @@ class Translator:
     response = self.client.translate_text(
       request={
         "parent": parent,
-        "contents": contents,
+        "contents": [text],
         "mime_type": "text/plain",
         "source_language_code": self.source_language_code,
         "target_language_code": self.target_language_code,
