@@ -59,7 +59,6 @@ def translate_content(client, page_content):
     body_dom.remove(child_dom)
   
   for source, target in zip(source_text_list, target_text_list):
-    print("source: ", source)
     source_dom = etree.fromstring(source, parser=parser)
     target_dom = etree.fromstring(target, parser=parser)
     body_dom.append(source_dom)

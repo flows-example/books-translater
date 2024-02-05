@@ -2,6 +2,7 @@ import re
 
 from lxml import etree
 from google.cloud import translate
+from .group import ParagraphsGroup
 
 # https://cloud.google.com/translate/docs/advanced/translate-text-advance?hl=zh-cn
 class Translator:
@@ -18,7 +19,11 @@ class Translator:
 
   def translate(self, page_content):
     parser = etree.HTMLParser(recover=True)
-
+    group = ParagraphsGroup(
+      max_paragraph_len=800,
+      # https://support.google.com/translate/thread/18674882/how-many-words-is-maximum-in-google?hl=en
+      max_group_len=5000,
+    )
     # to remove <?xml version="1.0" encoding="utf-8"?> which lxml cannot parse
     xml = re.sub(r"^<\?xml.*\?>", "", page_content)
     # remove namespace of epub
@@ -31,19 +36,30 @@ class Translator:
 
     merged_text_list = []
     source_text_list, child_doms = self._collect_child_text_list(body_dom)
-
-    # TODO: 先这样
-    source_text_list = source_text_list[:20]
-    target_text_list = self._translate_html(source_text_list)
+    source_text_groups = group.split(source_text_list)
 
     for child_dom in child_doms:
       body_dom.remove(child_dom)
 
-    for source, target in zip(source_text_list, target_text_list):
-      source_dom = etree.fromstring(source, parser=parser)
-      target_dom = etree.fromstring(target, parser=parser)
-      body_dom.append(source_dom)
-      body_dom.append(target_dom)
+    for index, source_text_list in enumerate(source_text_groups):
+      source_text_list = self._standardize_paragraph_list(source_text_list)
+      target_text_list = self._translate_html(source_text_list)
+    
+      if len(target_text_list) > 0:
+
+        if index > 0:
+          source_text_list.pop(0)
+          target_text_list.pop(0)
+
+        if index < len(source_text_groups):
+          source_text_list.pop()
+          target_text_list.pop()
+
+        for source, target in zip(source_text_list, target_text_list):
+          source_dom = etree.fromstring(source, parser=parser)
+          target_dom = etree.fromstring(target, parser=parser)
+          body_dom.append(source_dom)
+          body_dom.append(target_dom)
 
     return etree.tostring(root, method="html", encoding="utf-8").decode("utf-8")
 
@@ -57,7 +73,18 @@ class Translator:
       child_doms.append(child_dom)
     
     return text_list, child_doms
-  
+
+  def _standardize_paragraph_list(self, text_list):
+    target_list = []
+    for text in text_list:
+      if not re.match(r"^[\s\n]*<p.*>", text):
+        text = "<p>" + text
+      if not re.match(r"</\s*p>[\s\n]*$", text):
+        text = text + "</p>"
+      if text != "" and not re.match(r"[\s\n]+", text):
+        target_list.append(text)
+    return target_list
+
   def _translate_html(self, contents) -> list[str]:
     location = "global"
     parent = f"projects/{self.project_id}/locations/{location}"
@@ -75,4 +102,3 @@ class Translator:
       target_list.append(translation.translated_text)
     
     return target_list
-

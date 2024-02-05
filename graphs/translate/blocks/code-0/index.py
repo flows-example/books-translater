@@ -2,7 +2,7 @@ import base64
 
 from io import BytesIO
 from ebooklib import epub, ITEM_DOCUMENT
-from logic.translator import Translator
+from logic import Translator
 
 def main(props, context):
   book = epub.read_epub(context.options["file"])
