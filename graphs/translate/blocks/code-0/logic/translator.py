@@ -4,6 +4,7 @@ from lxml import etree
 from html import escape
 from google.cloud import translate
 from .group import ParagraphsGroup
+from .utils import create_node
 
 # https://cloud.google.com/translate/docs/advanced/translate-text-advance?hl=zh-cn
 class Translator:
@@ -67,8 +68,8 @@ class Translator:
         target_text_list.pop()
 
       for source, target in zip(source_text_list, target_text_list):
-        source_dom = etree.fromstring(source, parser=self.parser)
-        target_dom = etree.fromstring(target, parser=self.parser)
+        source_dom = create_node(source, parser=self.parser)
+        target_dom = create_node(target, parser=self.parser)
 
         if source_dom is not None and target_dom is not None:
           body_dom.append(source_dom)
@@ -103,7 +104,7 @@ class Translator:
     if self.clean_format:
       contents = contents.copy()
       for i, content in enumerate(contents):
-        dom = etree.fromstring(content, parser=self.parser)
+        dom = create_node(content, parser=self.parser)
         contents[i] = etree.tostring(dom, method="text", encoding="utf-8", pretty_print=False).decode("utf-8")
 
     if self.clean_format:
