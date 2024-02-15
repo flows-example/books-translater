@@ -6,6 +6,31 @@ from google.cloud import translate
 from .group import ParagraphsGroup
 from .utils import create_node
 
+class _XML:
+  def __init__(self, page_content: str, parser: etree.HTMLParser):
+    regex = r"^<\?xml.*\?>"
+    match = re.match(regex, page_content)
+    xml = re.sub(regex, "", page_content)
+
+    if match:
+      self.head = match.group()
+    else:
+      self.head = ""
+
+    self.root = etree.fromstring(xml, parser=parser)
+    self.nsmap: dict = self.root.nsmap.copy()
+    self.root.nsmap.clear()
+
+  def encode(self) -> str:
+    for key, value in self.nsmap.items():
+      self.root.nsmap[key] = value
+
+    text = etree.tostring(self.root, method="html", encoding="utf-8")
+    text = text.decode("utf-8")
+    text = self.head + text
+
+    return text
+
 # https://cloud.google.com/translate/docs/advanced/translate-text-advance?hl=zh-cn
 class Translator:
   def __init__(
@@ -38,14 +63,14 @@ class Translator:
       max_group_len=5000,
     )
     # to remove <?xml version="1.0" encoding="utf-8"?> which lxml cannot parse
-    xml = re.sub(r"^<\?xml.*\?>", "", page_content)
+    # xml = re.sub(r"^<\?xml.*\?>", "", page_content)
     # remove namespace of epub
     # xml = re.sub(r"xmlns=\"http://www.w3.org/1999/xhtml\"", "", xml)
     # xml = re.sub(r"xmlns:epub=\"http://www.idpf.org/2007/ops\"", "", xml)
     # xml = re.sub(r"epub:", "", xml)
 
-    root = etree.fromstring(xml, parser=self.parser)
-    body_dom = root.find("body")
+    xml = _XML(page_content, self.parser)
+    body_dom = xml.root.find("body")
 
     merged_text_list = []
     source_text_list, child_doms = self._collect_child_text_list(body_dom)
@@ -75,7 +100,7 @@ class Translator:
           body_dom.append(source_dom)
           body_dom.append(target_dom)
 
-    return etree.tostring(root, method="html", encoding="utf-8").decode("utf-8")
+    return xml.encode()
 
   def _collect_child_text_list(self, dom):
     text_list = []
