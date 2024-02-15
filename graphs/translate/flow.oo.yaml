@@ -7,10 +7,7 @@ nodes:
       x: 39
       'y': 39
     options:
-      file: >-
-        /oomol-storage/books/The Forgotten Revolution How Science Was Born in
-        300 BC and Why it Had to Be Reborn (Lucio Russo, Silvio (translator)
-        Levy) (Z-Library).epub
+      file: /oomol-storage/books/How.epub
       source: en
       target: zh-CN
       max_paragraph_characters: 835

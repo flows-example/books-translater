@@ -40,9 +40,9 @@ class Translator:
     # to remove <?xml version="1.0" encoding="utf-8"?> which lxml cannot parse
     xml = re.sub(r"^<\?xml.*\?>", "", page_content)
     # remove namespace of epub
-    xml = re.sub(r"xmlns=\"http://www.w3.org/1999/xhtml\"", "", xml)
-    xml = re.sub(r"xmlns:epub=\"http://www.idpf.org/2007/ops\"", "", xml)
-    xml = re.sub(r"epub:", "", xml)
+    # xml = re.sub(r"xmlns=\"http://www.w3.org/1999/xhtml\"", "", xml)
+    # xml = re.sub(r"xmlns:epub=\"http://www.idpf.org/2007/ops\"", "", xml)
+    # xml = re.sub(r"epub:", "", xml)
 
     root = etree.fromstring(xml, parser=self.parser)
     body_dom = root.find("body")
