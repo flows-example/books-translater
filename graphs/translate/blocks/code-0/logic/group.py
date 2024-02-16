@@ -16,16 +16,14 @@ class ParagraphsGroup:
     for index, text in enumerate(text_list):
       if len(text) > self.max_paragraph_len:
         for cell in split_paragraph(text):
-          splited_paragraph_list.append(Paragraph(cell, index))
-      else:
-        while len(text) > self.max_group_len:
-          splited_paragraph_list.append(Paragraph(
-            text=text[:self.max_group_len], 
-            index=index,
-          ))
-          text = text[self.max_group_len:]
-        if len(text) > 0:
-          splited_paragraph_list.append(Paragraph(text, index))
+          while len(cell) > self.max_group_len:
+            splited_paragraph_list.append(Paragraph(
+              text=cell[:self.max_group_len], 
+              index=index,
+            ))
+            cell = cell[self.max_group_len:]
+          if len(cell) > 0:
+            splited_paragraph_list.append(Paragraph(cell, index))
 
     sum_len = 0
     self_paragraphs_count = 0
@@ -33,9 +31,7 @@ class ParagraphsGroup:
     current_paragraph_list: list[Paragraph] = []
 
     for paragraph in splited_paragraph_list:
-      paragraph_len = len(paragraph.text)
-
-      if len(current_paragraph_list) > 0 and sum_len + paragraph_len > self.max_group_len:
+      if len(current_paragraph_list) > 0 and sum_len + len(paragraph.text) > self.max_group_len:
         grouped_paragraph_list.append(current_paragraph_list)
         sum_len = 0
         self_paragraphs_count = 0
@@ -48,7 +44,7 @@ class ParagraphsGroup:
           for cell in current_paragraph_list:
             sum_len += len(cell.text)
 
-      sum_len += paragraph_len
+      sum_len += len(paragraph.text)
       self_paragraphs_count += 1
       current_paragraph_list.append(paragraph)
 

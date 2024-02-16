@@ -54,7 +54,7 @@ def _translate_folder(path: str, translator):
       file_path = os.path.abspath(os.path.join(path, spine.href))
       with open(file_path, "r", encoding="utf-8") as file:
         content = file.read()
-        content = translator.translate_page(content)
+        content = translator.translate_page(file_path, content)
       with open(file_path, "w", encoding="utf-8") as file:
         file.write(content)
 
