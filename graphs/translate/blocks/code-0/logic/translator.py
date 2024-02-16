@@ -192,7 +192,7 @@ class Translator:
     return target_text_list
 
   def _is_not_empty(self, text: str) -> bool:
-    return text != "" and not re.match(r"[\s\n]+", text)
+    return not re.match(r"^[\s\n]*$", text)
 
   def _clean_p_tag(self, text: str) -> str:
     text = re.sub(r"^[\s\n]*<p[^>]*>", "", text)
@@ -214,7 +214,7 @@ class Translator:
     if len(contents) > 0:
       location = "global"
       parent = f"projects/{self.project_id}/locations/{location}"
-      
+
       try:
         response = self.client.translate_text(
           request={
