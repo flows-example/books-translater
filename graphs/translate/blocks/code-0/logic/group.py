@@ -1,3 +1,5 @@
+import io
+
 from .paragraph_sliter import split_paragraph
 
 class Paragraph:
@@ -49,12 +51,36 @@ class ParagraphsGroup:
       splited_paragraph_list.append(Paragraph(text, index))
       return
 
+    buffer = io.StringIO()
+    buffer_len = 0
+
     for cell in split_paragraph(text):
-      while len(cell) > self.max_group_len:
+      if len(cell) + buffer_len <= self.max_paragraph_len:
+        buffer.write(cell)
+        buffer_len += len(cell)
+      elif buffer_len > 0:
+        buffer.flush()
         splited_paragraph_list.append(Paragraph(
-          text=cell[:self.max_group_len], 
+          text=buffer.getvalue(), 
           index=index,
         ))
-        cell = cell[self.max_group_len:]
-      if len(cell) > 0:
-        splited_paragraph_list.append(Paragraph(cell, index))
+        buffer.close()
+        buffer = io.StringIO()
+        buffer_len = 0
+      else:
+        while len(cell) > self.max_group_len:
+          splited_paragraph_list.append(Paragraph(
+            text=cell[:self.max_group_len], 
+            index=index,
+          ))
+          cell = cell[self.max_group_len:]
+        if len(cell) > 0:
+          splited_paragraph_list.append(Paragraph(cell, index))
+
+    if buffer_len > 0:
+        buffer.flush()
+        splited_paragraph_list.append(Paragraph(
+          text=buffer.getvalue(), 
+          index=index,
+        ))
+    buffer.close()
