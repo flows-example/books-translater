@@ -66,9 +66,6 @@ class Translator:
     source_dom_text_list: list[str] = []
     p_doms = list(xml.root.xpath('//p'))
 
-    __debug_duplicated_texts_set = set()
-    __debug_found_duplicated_set = set()
-
     for p_dom in p_doms:
       bin_text = etree.tostring(p_dom, method="html", encoding="utf-8")
       source_dom_text_list.append(bin_text.decode("utf-8"))
@@ -94,11 +91,6 @@ class Translator:
         else:
           to_target_text_pair_map[index] = [pair]
 
-        if target_text != "":
-          if target_text in __debug_duplicated_texts_set:
-              __debug_found_duplicated_set.add(target_text)
-          __debug_duplicated_texts_set.add(target_text)
-
     for index, p_dom in enumerate(p_doms):
       if index in to_target_text_pair_map:
         new_p_doms = []
@@ -115,19 +107,6 @@ class Translator:
         for new_p_dom in reversed(new_p_doms):
           parent_dom.insert(index_at_parent, new_p_dom)
         parent_dom.remove(p_dom)
-
-    if len(__debug_found_duplicated_set) > 0:
-      file_name = os.path.basename(file_path)
-      log_path = f"/app/workspace/source/{file_name}.json"
-      json_str = json.dumps(
-        {
-          "duplicated": list(__debug_found_duplicated_set),
-          "source": source_text_list,
-        }, 
-        indent=4,
-      )
-      with open(log_path, "w") as file:
-          file.write(json_str)
 
     return xml.encode()
 
