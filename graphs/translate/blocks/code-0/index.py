@@ -48,7 +48,7 @@ def main(props, context):
     shutil.rmtree(unzip_path)
 
 def _translate_folder(path: str, translator):
-  content = EpubContent(os.path.join(path, "content.opf"))
+  content = EpubContent(path)
   for spine in content.spines:
     if spine.media_type == "application/xhtml+xml":
       file_path = os.path.abspath(os.path.join(path, spine.href))
