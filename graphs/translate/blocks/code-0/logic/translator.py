@@ -148,15 +148,20 @@ class Translator:
     for index, text in enumerate(source_text_list):
       if self._is_not_empty(text):
         text = f"<p>{text}</p>"
-        check_again = False
+        dom = create_node(text, parser=self.parser)
 
         if self.clean_format:
-          dom = create_node(text, parser=self.parser)
-          text = etree.tostring(dom, method="text", encoding="utf-8", pretty_print=False)
-          text = text.decode("utf-8")
-          check_again = True
+          unformat_text = self._unformat(dom)
+          text = unformat_text
+        else:
+          # 一些英语书籍会用 span 进行缩进排版，这些会影响翻译，应该删除
+          changed = self._try_to_clean_space(dom)
+          if changed:
+            bin_text = etree.tostring(dom, method="html", encoding="utf-8")
+            text = bin_text.decode("utf-8")
+          unformat_text = self._unformat(dom)
 
-        if not check_again or self._is_not_empty(text):
+        if self._is_not_empty(unformat_text):
           to_translated_text_list.append(text)
           index_list.append(index)
     
@@ -207,6 +212,28 @@ class Translator:
         target_text_list[index] = translation.translated_text
     
     return target_text_list
+
+  def _try_to_clean_space(self, dom):
+    span_list = []
+    changed = False
+    for dom in dom.xpath(".//span"):
+      span_list.append(dom)
+    for dom in span_list:
+      text_bin = etree.tostring(dom, method="text", encoding="utf-8", pretty_print=False)
+      if self._is_not_empty(text_bin.decode("utf-8")):
+        continue
+      tail = dom.tail
+      if tail is None:
+        tail = " "
+      else:
+        tail = f" {tail}"
+      dom.tail = tail
+      dom.getparent().remove(dom)
+      changed = True
+    return changed
+
+  def _unformat(self, dom):
+    return etree.tostring(dom, method="text", encoding="utf-8", pretty_print=False).decode("utf-8")
 
   def _is_not_empty(self, text: str) -> bool:
     return not re.match(r"^[\s\n]*$", text)
