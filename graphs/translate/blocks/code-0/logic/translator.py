@@ -105,7 +105,8 @@ class Translator:
         for pair in to_target_text_pair_map[index]:
           for text in pair:
             if text != "":
-              new_p_dom = create_node(f"<p>{text}</p>", parser=self.parser)
+              new_p_text = self._wrap_with_p(p_dom, text)
+              new_p_dom = create_node(new_p_text, parser=self.parser)
               new_p_doms.append(new_p_dom)
     
         parent_dom = p_dom.getparent()
@@ -191,15 +192,6 @@ class Translator:
 
     return target_text_list
 
-  def _is_not_empty(self, text: str) -> bool:
-    return not re.match(r"^[\s\n]*$", text)
-
-  def _clean_p_tag(self, text: str) -> str:
-    text = re.sub(r"^[\s\n]*<p[^>]*>", "", text)
-    text = re.sub(r"</\s*p>[\s\n]*$", "", text)
-    text = re.sub(r"[\s\n]+", " ", text)
-    return text
-
   def _translate_by_google(self, source_text_list, mime_type) -> list[str]:
     indexes = []
     contents = []
@@ -236,3 +228,23 @@ class Translator:
         target_text_list[index] = translation.translated_text
     
     return target_text_list
+
+  def _is_not_empty(self, text: str) -> bool:
+    return not re.match(r"^[\s\n]*$", text)
+
+  def _wrap_with_p(self, p_dom, text: str) -> str:
+    attributes_list = []
+    for key, value in p_dom.attrib.items():
+      json_value = json.dumps(value)
+      attributes_list.append(f"{key}={json_value}")
+    if len(attributes_list) > 1:
+      attributes = " ".join(attributes_list)
+      return f"<p {attributes}>{text}</p>"
+    else:
+      return f"<p>{text}</p>"
+
+  def _clean_p_tag(self, text: str) -> str:
+    text = re.sub(r"^[\s\n]*<p[^>]*>", "", text)
+    text = re.sub(r"</\s*p>[\s\n]*$", "", text)
+    text = re.sub(r"[\s\n]+", " ", text)
+    return text
