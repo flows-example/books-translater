@@ -54,12 +54,8 @@ class Translator:
     self.max_paragraph_characters = max_paragraph_characters
     self.clean_format = clean_format
 
-  def translate(self, text):
-    translated_text_list = self._translate_by_google([text], "text/plain")
-    if len(translated_text_list) > 0:
-      return translated_text_list[0]
-    else:
-      return text
+  def translate(self, text_list: list[str]):
+    return self._translate_by_google(text_list, "text/plain")
 
   def translate_page(self, file_path: str, page_content: str):
     xml = _XML(page_content, self.parser)
