@@ -19,7 +19,7 @@ class OpenAITranslator:
       "Authorization": f"Bearer {auth_token}",
     }
 
-  def translate(self, text_list: list[str]):
+  def translate(self, text_list: list[str], mime_type: str):
     text_buffer_list = []
 
     for index, text in enumerate(text_list):
