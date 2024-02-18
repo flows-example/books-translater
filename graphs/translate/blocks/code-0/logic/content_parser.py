@@ -10,6 +10,7 @@ class Spine:
 
 class EpubContent:
   def __init__(self, path: str):
+    self.folder_path = path
     self._content_path = self._find_content_path(path)
     self._tree = etree.parse(self._content_path)
     self._namespaces = { "ns": self._tree.getroot().nsmap.get(None) }
@@ -30,6 +31,14 @@ class EpubContent:
     joined_path = os.path.join(path, full_path)
 
     return os.path.abspath(joined_path)
+
+  @property
+  def ncx_path(self):
+    ncx_dom = self._manifest.find(".//*[@id=\"ncx\"]")
+    if not ncx_dom is None:
+      path = ncx_dom.get("href")
+      path = os.path.join(self.folder_path, path)
+      return os.path.abspath(path)
 
   @property
   def spines(self):

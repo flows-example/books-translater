@@ -6,6 +6,7 @@ import tempfile
 import base64
 import shutil
 
+from lxml import etree
 from logic import Translator, EpubContent
 
 def main(props, context):
@@ -55,7 +56,7 @@ def _translate_folder(context, path: str, translator):
   else:
     book_title = epub_content.title
     if not book_title is None:
-      book_title += " - " + translator.translate([book_title])[0]
+      book_title = _link_translated(book_title, translator.translate([book_title])[0])
 
   if not book_title is None:
     epub_content.title = book_title
@@ -64,10 +65,35 @@ def _translate_folder(context, path: str, translator):
   to_authors = translator.translate(authors)
 
   for i, author in enumerate(authors):
-    authors[i] = author + " - " + to_authors[i]
+    authors[i] = _link_translated(author, to_authors[i])
 
   epub_content.authors = authors
+  epub_content.save()
 
+  _transalte_ncx(epub_content, translator)
+  _translate_spines(epub_content, path, translator)
+
+def _transalte_ncx(epub_content: EpubContent, translator):
+  ncx_path = epub_content.ncx_path
+
+  if ncx_path is not None:
+    tree = etree.parse(ncx_path)
+    root = tree.getroot()
+    namespaces={ "ns": root.nsmap.get(None) }
+    text_doms = []
+    text_list = []
+
+    for text_dom in root.xpath("//ns:text", namespaces=namespaces):
+      text_doms.append(text_dom)
+      text_list.append(text_dom.text)
+    
+    for index, text in enumerate(translator.translate(text_list)):
+      text_dom = text_doms[index]
+      text_dom.text = _link_translated(text_dom.text, text)
+
+    tree.write(ncx_path, pretty_print=True)
+
+def _translate_spines(epub_content: EpubContent, path: str, translator):
   for spine in epub_content.spines:
     if spine.media_type == "application/xhtml+xml":
       file_path = os.path.abspath(os.path.join(path, spine.href))
@@ -77,4 +103,8 @@ def _translate_folder(context, path: str, translator):
       with open(file_path, "w", encoding="utf-8") as file:
         file.write(content)
 
-  epub_content.save()
+def _link_translated(origin: str, target: str) -> str:
+  if origin == target:
+    return origin
+  else:
+    return f"{origin} - {target}"
